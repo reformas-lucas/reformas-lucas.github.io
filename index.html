@@ -130,7 +130,7 @@ body.capturando .sheet{background:#fff!important}
 .foot span:first-child{font-family:'LucasTit',sans-serif;font-weight:700;color:#141414;letter-spacing:.4px}
 .ptag{font-family:'LucasTit',sans-serif;font-stretch:normal;font-weight:800;font-size:38px;letter-spacing:-.8px;line-height:1.04;color:#141414}
 .pline{background:#E04209}
-.pover{background:linear-gradient(to bottom,rgba(17,18,20,.55) 0%,rgba(17,18,20,.35) 26%,rgba(255,255,255,.6) 42%,rgba(255,255,255,.95) 56%,#fff 68%,#fff 100%)}
+.pover{background:linear-gradient(to bottom,rgba(17,18,20,.62) 0%,rgba(17,18,20,.18) 26%,rgba(17,18,20,0) 40%,rgba(255,255,255,0) 50%,rgba(255,255,255,.88) 80%,#fff 93%)}
 .dos2 h3,.segui h3{font-family:'LucasTit',sans-serif;font-stretch:normal;font-weight:800;font-size:19px;letter-spacing:-.2px}
 .vals div b{font-family:'LucasTit',sans-serif;font-stretch:normal;font-weight:700;font-size:12.5px}
 .serv li:before{background:#E04209;border-radius:50%}
@@ -139,6 +139,18 @@ body.capturando .sheet{background:#fff!important}
 h1,h2,h3,.dochead .who,.ptab tr.cap td,.tot .big,.ptag,.clausula b,.vals div b{font-stretch:normal}
 .dochead .who{font-size:0!important;line-height:0}
 .dochead .who small{display:block;font-size:10.5px!important;line-height:1.5;margin-top:1mm}
+@media (max-width:700px){
+ .dochead{flex-direction:column;gap:4mm;align-items:stretch}
+ .dochead .doc{text-align:left!important;border:0!important;padding:0!important;background:transparent!important;box-shadow:none!important}
+ .dochead .doc h2{font-size:22px!important;white-space:normal}
+ .dochead .doc h2:after{margin:2mm 0 2mm 0}
+ .dochead+div{grid-template-columns:1fr!important;gap:3mm!important}
+ .ptab{font-size:12.5px;table-layout:auto}
+ .ptab th,.ptab td{padding:6px 4px}
+ .ptab td.r,.ptab th.r{white-space:nowrap;font-size:11.5px}
+ .ptab th:nth-child(3),.ptab td:nth-child(3){display:none}
+ .tot{width:100%!important}
+}
 
 </style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Figtree:wght@400;500;600;700&display=swap"><link rel="stylesheet" href="empresas/lucas/tema.css?1791230220"></head><body>
 <div id="login" style="display:none;position:fixed;inset:0;background:var(--slate);z-index:50;align-items:center;justify-content:center;padding:20px"><div class="card" style="max-width:360px;width:100%"><img src="icons/icon-192.png?e=lucas" alt="" style="height:64px;width:64px;border-radius:12px;display:block;margin:0 auto 10px"><h2 style="font-size:26px;margin-bottom:4px;text-align:center" id="loginTitle">VORMA CONSTRUCT SL</h2><p style="color:var(--muted);margin:0 0 10px">Entra con tu correo y tu clave.</p><label class="f">Correo</label><input id="lg_email" type="email" autocomplete="username"><label class="f" style="margin-top:8px">Clave</label><input id="lg_pass" type="password" autocomplete="current-password"><div class="row" style="margin-top:12px"><button onclick="entrar()">Entrar</button><span id="lg_msg" style="color:var(--brick)"></span></div>
@@ -246,7 +258,7 @@ h1,h2,h3,.dochead .who,.ptab tr.cap td,.tot .big,.ptag,.clausula b,.vals div b{f
 </section>
 
 <script>
-var APP_VERSION='v191';document.getElementById('ver').textContent=APP_VERSION;var vf=document.getElementById('verFijo');if(vf)vf.textContent=APP_VERSION;
+var APP_VERSION='v192';document.getElementById('ver').textContent=APP_VERSION;var vf=document.getElementById('verFijo');if(vf)vf.textContent=APP_VERSION;
 /* ---------- TARIFA (sacada de los presupuestos 544 y 545 de Ioan) ---------- */
 var TARIFA_BASE=[
 {id:'tab',c:'Demoliciones',d:'Derribo de tabique (uno o dos tabiques), retirada de escombro y tirada al centro autorizado',u:'ud',p:0,k:['tabique','tirar tabique','derribo','derribar']},
