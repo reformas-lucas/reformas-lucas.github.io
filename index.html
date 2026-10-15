@@ -153,7 +153,7 @@ h1,h2,h3,.dochead .who,.ptab tr.cap td,.tot .big,.ptag,.clausula b,.vals div b{f
  .tot{width:100%!important}
 }
 
-</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Figtree:wght@400;500;600;700&display=swap"><link rel="stylesheet" href="empresas/lucas/tema.css?1792064575"></head><body>
+</style><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Figtree:wght@400;500;600;700&display=swap"><link rel="stylesheet" href="empresas/lucas/tema.css?1792068555"></head><body>
 <div id="login" style="display:none;position:fixed;inset:0;background:var(--slate);z-index:50;align-items:center;justify-content:center;padding:20px"><div class="card" style="max-width:360px;width:100%"><img src="icons/icon-192.png?e=lucas" alt="" style="height:64px;width:64px;border-radius:12px;display:block;margin:0 auto 10px"><h2 style="font-size:26px;margin-bottom:4px;text-align:center" id="loginTitle">VORMA CONSTRUCT SL</h2><p style="color:var(--muted);margin:0 0 10px">Entra con tu correo y tu clave.</p><label class="f">Correo</label><input id="lg_email" type="email" autocomplete="username"><label class="f" style="margin-top:8px">Clave</label><input id="lg_pass" type="password" autocomplete="current-password"><div class="row" style="margin-top:12px"><button onclick="entrar()">Entrar</button><span id="lg_msg" style="color:var(--brick)"></span></div>
 <button class="sec" style="width:100%;margin-top:10px" onclick="olvideClave()">No me acuerdo de la clave</button>
 <button class="sec" style="width:100%;margin-top:6px" onclick="crearCuenta()">Crear una cuenta nueva</button></div></div>
@@ -259,7 +259,7 @@ h1,h2,h3,.dochead .who,.ptab tr.cap td,.tot .big,.ptag,.clausula b,.vals div b{f
 </section>
 
 <script>
-var APP_VERSION='v238';document.getElementById('ver').textContent=APP_VERSION;var vf=document.getElementById('verFijo');if(vf)vf.textContent=APP_VERSION;
+var APP_VERSION='v239';document.getElementById('ver').textContent=APP_VERSION;var vf=document.getElementById('verFijo');if(vf)vf.textContent=APP_VERSION;
 /* ---------- TARIFA (sacada de los presupuestos 544 y 545 de Ioan) ---------- */
 var TARIFA_BASE=[
 {id:'tab',c:'Demoliciones',d:'Derribo de tabique (uno o dos tabiques), retirada de escombro y tirada al centro autorizado',u:'ud',p:0,k:['tabique','tirar tabique','derribo','derribar']},
@@ -701,7 +701,7 @@ function revisar(mostrar,calla){leer();var E=[],A=[],L=cur.lineas,T=tarifa();var
 if(!cur.nom)E.push('Falta el nombre del cliente.');if(!cur.dir)A.push('Falta la dirección de la obra.');
 if(!L.length)E.push('El presupuesto no tiene partidas.');
 L.forEach(function(l,i){if(!l.d.trim())E.push('La línea '+(i+1)+' está vacía.');if(!(l.q>0))E.push('«'+l.d.slice(0,50)+'…» tiene cantidad cero.');if(!(l.p>0))E.push('«'+l.d.slice(0,50)+'…» está a CERO euros.')});
-var vistos={};L.forEach(function(l){var k=norm(l.d).slice(0,60)+'|'+l.u;if(vistos[k]&&vistos[k].q===l.q)A.push('Partida repetida con la misma cantidad: «'+l.d.slice(0,50)+'…».');vistos[k]=l});
+var vistos={};L.forEach(function(l){var k=(l.paqId?norm(l.d):norm(l.d).slice(0,60))+'|'+l.u;if(vistos[k]&&vistos[k].q===l.q)A.push('Partida repetida con la misma cantidad: «'+l.d.slice(0,50)+'…».');vistos[k]=l});
 if(cur.arq&&cur.arq.length){cur.arq.forEach(function(a){var l=L.find(function(x){return x.code===a.code});if(!l)E.push('Falta la partida '+a.code+' del arquitecto: «'+a.t.slice(0,50)+'». Estaba en las mediciones y ya no está.');else if(Math.abs(l.q-a.q)>0.001)A.push('Partida '+a.code+': el arquitecto mide '+a.q+' '+a.u+' y tú tienes '+l.q+' '+l.u+'.')});var totA=cur.arq.reduce(function(s,a){return s+(a.pa||0)*a.q},0);if(totA>0){var tot=L.reduce(function(s,l){return s+l.q*l.p},0);A.push('El arquitecto estima '+eur(totA)+' sin IVA; tu base es '+eur(tot)+' ('+Math.round(tot/totA*100)+' %).')}}
 var NA=AJ.noAvisar||{},K={};var avisa=function(k,t){if(NA[k])return;K[t]=k;A.push(t)};
 if(cur.asc==='1'&&!has(/montacargas/))avisa('mon','Has marcado piso sin ascensor y no está el suplemento de montacargas. Si no lo cobras, déjalo así.');
@@ -1875,7 +1875,7 @@ function alVolverApp(){if(document.visibilityState!=='hidden'&&Date.now()-__ultV
 document.addEventListener('visibilitychange',alVolverApp);window.addEventListener('focus',alVolverApp);window.addEventListener('pageshow',function(e){if(e&&e.persisted)alVolverApp()});
 /* después de ponerse la versión nueva, vuelve al presupuesto que estaba abierto */
 try{var __ra=sessionStorage.getItem('vr_reabrir');if(__ra){sessionStorage.removeItem('vr_reabrir');if(DB.presus&&DB.presus[__ra])setTimeout(function(){try{abrir(__ra)}catch(_){}},400)}}catch(_){}
-</script><script src="oficio.js?v237"></script><script src="entiende.js?v238"></script><script src="arquitecto.js?v182"></script><script src="actualiza.js?v167"></script><script src="precios.js?v183"></script><script src="vigila.js?v232"></script><script src="autoarreglo.js?v222"></script><script src="mapa.js?v195"></script><script src="pdfdatos.js?v194"></script><script src="planos.js?v201"></script>
+</script><script src="oficio.js?v237"></script><script src="entiende.js?v239"></script><script src="arquitecto.js?v239"></script><script src="actualiza.js?v167"></script><script src="precios.js?v183"></script><script src="vigila.js?v239"></script><script src="autoarreglo.js?v222"></script><script src="mapa.js?v195"></script><script src="pdfdatos.js?v194"></script><script src="planos.js?v201"></script>
 <script src="correos.js?v195"></script>
 <script src="rumano.js?v200"></script>
 <script src="dictados.js?v238"></script>
@@ -1885,4 +1885,4 @@ try{var __ra=sessionStorage.getItem('vr_reabrir');if(__ra){sessionStorage.remove
 <input type="file" id="fotoInput" accept="image/*" capture="environment" multiple style="display:none" onchange="subirFotos(this.files)"><div id="fotosBox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9000;align-items:center;justify-content:center;padding:14px"><div class="card" style="max-width:560px;width:100%;max-height:85vh;overflow:auto"><div class="row" style="justify-content:space-between;align-items:center"><h2 id="fotosTit" style="font-size:18px;margin:0">Fotos</h2><button class="sec" onclick="cerrarFotos()">Cerrar</button></div><p style="font-size:12px;color:var(--muted);margin:6px 0">Fotos del trabajo. El enlace del cliente es privado.</p><div class="row" style="margin:8px 0"><button class="ok" onclick="abrirFotos(window.__fotoObra)">Fotos</button><button class="sec" onclick="mandarSeguimiento(window.__fotoObra)">Mandar enlace</button></div><p style="font-size:12px;color:var(--muted);margin:0 0 8px">Con ese enlace el cliente ve el <b>diario de obra</b>: lo que se ha hecho en cada avance y los imprevistos que han salido.</p><div id="fotosLista"></div></div></div>
 <section class="page" id="page-legal"><div class="card"><h2>Mis papeles de protección de datos</h2><p style="color:var(--muted);font-size:13px">Rellenados con tus datos. Mándaselos al cliente si te los pide.</p><div class="row"><button class="ok" onclick="copiarLegal('privacidad')">Copiar privacidad</button><button class="sec" onclick="waLegal('privacidad')">Mandarla por WhatsApp</button></div><div id="txtPriv" style="white-space:pre-wrap;background:#f2f1ee;border-radius:8px;padding:12px;margin-top:8px;font-size:13px;line-height:1.5"></div><div class="row" style="margin-top:16px"><button class="ok" onclick="copiarLegal('registro')">Copiar registro</button><button class="sec" onclick="waLegal('registro')">Mandarlo por WhatsApp</button></div><div id="txtReg" style="white-space:pre-wrap;background:#f2f1ee;border-radius:8px;padding:12px;margin-top:8px;font-size:13px;line-height:1.5"></div></div></section>
 
-<script src="empresas/lucas/tema.js?1792064575"></script></body></html>
+<script src="empresas/lucas/tema.js?1792068555"></script></body></html>
