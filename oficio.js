@@ -61,7 +61,7 @@ var HACER_RE=/\b(poner|colocar|hacer|montar|instalar|suministr\w*|colocaci\w*|in
 /* raiz de palabra: para que "alicatado", "alicatar" y "alicatao" cuenten como lo mismo */
 var VACIAS={de:1,del:1,la:1,el:1,los:1,las:1,en:1,y:1,con:1,por:1,para:1,un:1,una:1,al:1,a:1,o:1,su:1,sus:1,tipo:1,segun:1,incluso:1,mm:1,cm:1,m:1,m2:1,ml:1,ud:1,existente:1,actual:1,medios:1,manuales:1,totalmente:1,terminado:1,color:1,blanco:1,blanca:1};
 function raices(t){return norm(t).replace(/[^a-z0-9 ]+/g,' ').split(/\s+/).filter(function(w){return w.length>2&&!VACIAS[w]}).map(function(w){return w.slice(0,5)})}
-var GENERIC={metro:1,cuadr:1,linea:1,alto:1,ancho:1,largo:1,altur:1,cuadra:1,poner:1,cambi:1,quita:1,hacer:1,monta:1,coloc:1,insta:1,sacar:1,tirar:1,picar:1,bano:1,cocin:1,salon:1,pared:1,suelo:1,techo:1,pasil:1,habit:1,casa:1,piso:1,vivie:1,nuevo:1,nueva:1,viejo:1,vieja:1,sumin:1,retir:1,tirad:1,centr:1,autor:1,resid:1,escom:1,todo:1,toda:1,entre:1,parte:1};
+var GENERIC={metro:1,cuadr:1,linea:1,alto:1,ancho:1,largo:1,altur:1,cuadra:1,poner:1,cambi:1,quita:1,hacer:1,monta:1,coloc:1,insta:1,sacar:1,tirar:1,picar:1,bano:1,cocin:1,salon:1,pared:1,suelo:1,techo:1,pasil:1,habit:1,casa:1,piso:1,vivie:1,nuevo:1,nueva:1,viejo:1,vieja:1,sumin:1,retir:1,tirad:1,centr:1,autor:1,resid:1,escom:1,todo:1,toda:1,entre:1,parte:1,banos:1,aseo:1,aseos:1,cocin:1,dos:1,tres:1,cuatr:1,cinco:1,seis:1,siete:1,ocho:1,nueve:1,diez:1,algo:1,otro:1,otra:1,otros:1,otras:1,todos:1,todas:1,mismo:1,misma:1,nueva:1,nuevo:1,nueve:1,quier:1,cliente:1,clien:1,senor:1};
 function fuertes(rs){return rs.filter(function(r){return !GENERIC[r]})}
 var IDX=null;
 function indice(){var T=tarifa();if(IDX&&IDX.n===T.length)return IDX.l;IDX={n:T.length,l:T.map(function(t){var r={};raices(t.d+' '+(t.k||[]).join(' ')).forEach(function(x){r[x]=1});return{t:t,r:r,dem:t.c==='Demoliciones'&&['con','con7','mon','limp','limf'].indexOf(t.id)<0}})};return IDX.l}
@@ -69,8 +69,9 @@ function indice(){var T=tarifa();if(IDX&&IDX.n===T.length)return IDX.l;IDX={n:T.
 function parecida(txt){var n=norm(txt||'');if(!n)return null;var rs=raices(n);if(!rs.length)return null;var dem=DEMOL_RE.test(n)&&!HACER_RE.test(n);var mejor=null;
 indice().forEach(function(e){if(e.dem!==dem)return;if(!fuertes(rs).some(function(r){return e.r[r]}))return;if(e.t.id==='recp'&&!/recuper|recoloc|volver a poner|la misma|existente/.test(n))return;var s=0;rs.forEach(function(r){if(e.r[r])s+=(r.length>=5?2:1)});
 /* palabras fuertes: si la tarifa la tiene y el texto tambien, cuenta doble */
-if(s>0){var fuerte=/pladur|alicat|solad|pint|yeso|enluc|tabiq|tarima|flotan|rodapi|puert|ducha|contened|fontan|electr|calefac|techo|armario|cocina|sanitar|premarc|corred|nivel|acuchill|extract|ventilac/;var mf=n.match(fuerte),tf=norm(e.t.d+' '+e.t.k.join(' ')).match(fuerte);if(mf&&tf&&mf[0]===tf[0])s+=3}
-if(s>0&&(!mejor||s>mejor.score))mejor={t:e.t,score:s}});
+if(s>0){var fuerte=/pladur|alicat|solad|pint|yeso|enluc|tabiq|tarima|flotan|rodapi|puert|ducha|contened|fontan|electr|calefac|techo|armario|cocina|sanitar|premarc|corred|nivel|acuchill|extract|ventilac|papel|mampar|radiad|parquet|gotel|laminad|moqueta|boletin|chimenea|trasdos/;var mf=n.match(fuerte),tf=norm(e.t.d+' '+e.t.k.join(' ')).match(fuerte);var fu=!!(mf&&tf&&mf[0]===tf[0]);if(fu)s+=3}
+/* nf: cuántas palabras de verdad (no de relleno) comparte con la partida. Si la única que comparte es una palabra suelta que sale en muchos trabajos («eléctrico», «fontanería», «techo», «tabique», «pladur», «radiador», «cocina»…), se parece pero no es seguro («cuadro eléctrico» no es la instalación eléctrica de todo el piso): a confirmar */
+if(s>0&&(!mejor||s>mejor.score))mejor={t:e.t,score:s,fu:fu,nf:fuertes(rs).filter(function(r){return e.r[r]}).length,suelta:!!(mf&&/^(?:electr|fontan|techo|tabiq|pladur|ventilac|radiad|cocina|calefac|extract)/.test(mf[0]))}});
 return mejor&&mejor.score>=3?mejor:null}
 window.parecida=parecida;
 var precioAprendido0=window.precioAprendido;
@@ -84,7 +85,8 @@ var M2_TABIQUE=7.5,MAX_POR_UD=2;
 if(!TARIFA_BASE.some(function(t){return t.id==='tabm'}))TARIFA_BASE.push({id:'tabm',c:'Demoliciones',d:'Derribo de tabiquería de ladrillo por metro cuadrado (obra de varios tabiques), retirada de escombro y tirada al centro autorizado',u:'m2',p:0,k:['derribo de tabiqueria','tabiqueria por metro','tabiques por metro']});
 function tabiqueSegunMetros(m2){var n=Math.max(1,Math.round(m2/M2_TABIQUE));var T=tarifa();
  if(n<=MAX_POR_UD){var t=T.find(function(x){return x.id==='tab'});return{id:'tab',q:1,u:'ud',p:t.p,d:t.d+' \u2014 '+(n===1?'un tabique':'dos tabiques')+' ('+String(m2).replace('.',',')+' m\u00b2 medidos)'}}
- var tm=T.find(function(x){return x.id==='tabm'});return{id:'tabm',q:m2,u:'m2',p:tm.p,d:tm.d+' \u2014 unos '+n+' tabiques'}}
+ /* con más de dos tabiques, por metro cuadrado: sin poner cuántos tabiques son (nadie lo ha dicho) */
+ var tm=T.find(function(x){return x.id==='tabm'});return{id:'tabm',q:m2,u:'m2',p:tm.p,d:tm.d}}
 window.tabiqueSegunMetros=tabiqueSegunMetros;
 function convertirTabiquesArq(){(ARQ.med||[]).forEach(function(p){if(p.tabHecho)return;var id=window.casar?casar(p.t):null;if(id!=='tab'||!/^m2$/.test(p.u))return;var r=tabiqueSegunMetros(p.q);p.tabHecho=true;p.sel=r.id;p.u=r.u;p.q=r.q;p.pr=r.p;p.dTab=r.d})}
 var renderArq0=window.renderArq;window.renderArq=function(){try{convertirTabiquesArq()}catch(e){}return renderArq0.apply(this,arguments)};
@@ -94,8 +96,8 @@ TARIFA_BASE.forEach(function(t){if(t.c!=='Demoliciones')return;t.k=t.k.filter(fu
 /* 2) medidas: alto de 2,5 m si no lo dices */
 var medidasDe0=window.medidasDe;
 window.medidasDe=function(txt){var r=medidasDe0(txt);var pared=/pared|alicat|azulej|chapa|pintar|pintura|enluc|lucir|yeso|lijar|alisar|gotele|pladur|tabique|trasdos/.test(txt);var suelo=/suelo|solad|pavimento|baldosa|tarima|laminado|parquet|flotante/.test(txt);if(r.suelo>0&&!(r.alto>0)&&pared&&!((suelo||window.__ENSUELO)&&!/pared/.test(txt))){r.alto=ALTO_DEFECTO;r.altoSupuesto=true}return r};
-/* unidad y cantidad de una frase suelta */
-function cantidadDe(fr){var m=fr.match(/(\d+(?:[.,]\d+)?)\s*(m2|m\u00b2|metros cuadrados)\b/);if(m)return{q:num(m[1]),u:'m2'};m=fr.match(/(\d+(?:[.,]\d+)?)\s*(ml|metros lineales)\b/);if(m)return{q:num(m[1]),u:'ml'};m=fr.match(/(\d+(?:[.,]\d+)?)\s*(metros|m)\b/);if(m)return{q:num(m[1]),u:/pared|suelo|techo|alicat|pint|yeso|pladur|tarima|flotante/.test(fr)?'m2':'ml'};m=fr.match(/(\d+)\s*(ud|uds|unidades|puertas|armarios|radiadores|ventanas)?\b/);if(m)return{q:num(m[1]),u:'ud'};return{q:1,u:'ud'}}
+/* unidad y cantidad de una frase suelta («poner tela asfáltica treinta metros», «suelo de vinilo veinte metros»: lo que cubre una superficie va por m², no por metro lineal) */
+function cantidadDe(fr){var m=fr.match(/(\d+(?:[.,]\d+)?)\s*(m2|m\u00b2|metros cuadrados)\b/);if(m)return{q:num(m[1]),u:'m2'};m=fr.match(/(\d+(?:[.,]\d+)?)\s*(ml|metros lineales)\b/);if(m)return{q:num(m[1]),u:'ml'};m=fr.match(/(\d+(?:[.,]\d+)?)\s*(metros|m)\b/);if(m)return{q:num(m[1]),u:/pared|suelo|techo|alicat|pint|yeso|pladur|tarima|flotante|tela|impermeabiliz|aislamiento|aislar|lamina|vinilo|moqueta|microcemento|epoxi|resina|cesped|tejado|cubierta|terraza|fachada|trasdos|solera|hormigon|baldosa|azulejo|gres|plaqueta|revest|enfosc|mortero|chapa|onduline|teja/.test(fr)?'m2':'ml'};m=fr.match(/(\d+)\s*(ud|uds|unidades|puertas|armarios|radiadores|ventanas)?\b/);if(m)return{q:num(m[1]),u:'ud'};return{q:1,u:'ud'}}
 /* «4 x 5», «4 por 5 metros»: medidas de una estancia */
 var DIM_RE=/(\d+(?:[.,]\d+)?)\s*(?:m|metros)?\s*(?:de\s*)?(?:largo|ancho)?\s*(?:x|por)\s*(\d+(?:[.,]\d+)?)\s*(?:m|metros)?(?:\s*de\s*(?:largo|ancho))?/g;
 /* 3) el dictado, mejorado */
@@ -106,7 +108,8 @@ txt=txt.replace(/\b(poner|colocar|meter|echar|hacer|cambiar|pintar|quitar)(?:le|
 txt=txt.split(/([,;.])/).map(function(fr){
  if(!/\b(embaldos\w*|baldosa\w*|azulej\w*|gres|porcelanico\w*|ceramica|plaqueta\w*|alicatado en el suelo)\b/.test(fr))return fr;
  if(/\b(quitar|picar|arrancar|levantar|sacar|tirar)\b/.test(fr)){var e2=(fr.match(/\b(bano|aseo|cocina)\b/)||[])[1];var s2=/\b(suelo|solado)\b/.test(fr),p2=/\b(pared|paredes)\b/.test(fr);var m2=(fr.match(/(\d+(?:[.,]\d+)?\s*(?:m2|m\u00b2|metros cuadrados|metros|m)\b)/)||[''])[0];
-  if(e2&&!s2&&!p2)return ' quitar alicatado de las paredes del '+e2+' '+m2+' , picar suelo del '+e2+' '+m2+' ';return fr}
+  /* con metros dichos («quitar 30 m2 de azulejo en la cocina») son los de las paredes; sin metros, paredes y suelo */
+  if(e2&&!s2&&!p2)return m2?' quitar alicatado de las paredes del '+e2+' '+m2+' ':' quitar alicatado de las paredes del '+e2+' '+m2+' , picar suelo del '+e2+' '+m2+' ';return fr}
  var est=(fr.match(/\b(bano|aseo|cocina|terraza|pasillo|salon|habitacion|entrada|galeria)\b/)||[])[1]||'';
  var med=(fr.match(/(\d+(?:[.,]\d+)?\s*(?:m2|m\u00b2|metros cuadrados|metros|m)\b(?:\s*(?:x|por)\s*\d+(?:[.,]\d+)?\s*(?:m|metros)?)?)/)||[])[1]||'';
  var resto=fr.replace(/(\d+(?:[.,]\d+)?\s*(?:de\s+)?(?:alto|altura))/,' $1 ');var alto=(fr.match(/\d+(?:[.,]\d+)?\s*(?:m|metros)?\s*de\s*(?:alto|altura)/)||[''])[0];
@@ -118,7 +121,7 @@ VOCAB.forEach(function(r){txt=txt.replace(r[0],r[1])});
 /* "20 metros cuadrados de suelo" es una medida, no un trabajo en el suelo */
 txt=txt.replace(/(metros cuadrados|m2)\s+(?:de\s+)?(?:suelo|planta)\b/g,'$1');
 /* paquetes */
-var MD=window.medidasDe(txt),paq=[];PAQUETES.forEach(function(p){if(p.re.test(txt))paq.push(p)});if(paq.length&&MD.suelo>0&&!(MD.alto>0)){MD.alto=ALTO_DEFECTO;MD.altoSupuesto=true}
+var MD=window.medidasDe(txt),paq=[];PAQUETES.forEach(function(p){if(!window.__sinPaquetesViejos&&p.re.test(txt))paq.push(p)});if(paq.length&&MD.suelo>0&&!(MD.alto>0)){MD.alto=ALTO_DEFECTO;MD.altoSupuesto=true}
 var nAntes=(cur.lineas||[]).length;ta.value=txt;try{convertir0()}finally{ta.value=bruto}
 leer();var T=tarifa(),añad=0;
 (function(){var dims=(txt.match(DIM_RE)||[]).length+(txt.match(/\d+(?:[.,]\d+)?\s*(?:m2|m\u00b2|metros cuadrados)\b/g)||[]).length;if(dims!==1||!(MD.suelo>0)||MD.casa)return;var cambia=0;
@@ -139,16 +142,17 @@ var dd=t.d;if(id==='alc'&&p.alcSuelo)dd=t.d+' \u2014 en las paredes';
 cur.lineas.push({d:dd,q:q,u:t.u,p:t.p,paquete:p.nombre});yaD[norm(t.d).slice(0,40)]=1;añad++;
 if(id==='alc'&&p.alcSuelo){cur.lineas.push({d:t.d+' \u2014 en el suelo',q:MD.suelo>0?MD.suelo:1,u:t.u,p:t.p,paquete:p.nombre});añad++}})});
 /* frases que no han encajado con nada de la tarifa: entran a cero, con su cantidad, y se pide el precio */
-var frases=txt.split(/[,;.]| y (?=(?:poner|colocar|hacer|montar|instalar|cambiar|quitar|picar|tirar|sacar|levantar|echar|meter|pintar|alicat|lijar|nivelar|reformar|arreglar|sustituir|renovar|abrir|forrar|revestir|alisar|enlucir|chapar|embaldos|enlos|acuchill|barniz)\b)/).map(function(f){return f.trim()}).filter(function(f){return f.replace(/[^a-z]/g,'').length>=6});
+/* «20,5 metros»: la coma de los decimales no parte la frase */
+var frases=txt.replace(/(\d)[,.](\d)/g,'$1#$2').split(/[,;.]| y (?=(?:poner|colocar|hacer|montar|instalar|cambiar|quitar|picar|tirar|sacar|levantar|echar|meter|pintar|alicat|lijar|nivelar|reformar|arreglar|sustituir|renovar|abrir|forrar|revestir|alisar|enlucir|chapar|embaldos|enlos|acuchill|barniz)\b)/).map(function(f){return f.replace(/(\d)#(\d)/g,'$1,$2')}).map(function(f){return f.trim()}).filter(function(f){return f.replace(/[^a-z]/g,'').length>=6});
 var sinPrecio=[];
 frases.forEach(function(fr){if(/^(?:un|una|dos|tres|\d+)\s+(?:puertas?|ventanas?)$/.test(fr.trim()))return;if(paq.some(function(p){return p.re.test(fr)}))return;
 var fr2=fr;(window.SINON||[]).forEach(function(r){fr2=fr2.replace(r[0],r[1])});
 var enc=T.some(function(t){return t.k.some(function(k){var kk=norm(k);var rx=new RegExp('\\b'+kk.split(' ').map(function(w){return w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}).join('(?:\\s+(?:el|la|los|las|un|una|de|del))?\\s+')+'\\b');return rx.test(fr2)})});
 if(enc)return;
-if(!/\b(poner|colocar|hacer|montar|instalar|cambiar|quitar|picar|tirar|sacar|levantar|echar|meter|pintar|alicat\w*|lijar|nivelar|reformar|arreglar|reparar|sustituir|renovar|abrir|cerrar|tapar|forrar|revestir|sellar|impermeabilizar|desatascar|limpiar|acuchillar|barnizar|lacar|enlucir|rasear|microcemento|mampara|grifo|grifer\w*|radiador|caldera|persiana|encimera|silicona|marmol|granito|piedra|madera|hierro|aluminio|cristal|espejo)\b/.test(fr))return;
-var frSin=fr.replace(DIM_RE,' ');var par=parecida(fr),c=cantidadDe(frSin);
-if(par){var t=par.t;if(yaD[norm(t.d).slice(0,40)])return;var q=c.q;if(t.u==='m2'&&PARED.indexOf(t.id)>-1&&MD.suelo>0&&(!MD.casa||PINTA.indexOf(t.id)>-1)&&!/m2|metros cuadrados/.test(fr))q=paredNeta(MD);cur.lineas.push({d:t.d,q:q,u:t.u,p:t.p});yaD[norm(t.d).slice(0,40)]=1;añad++;return}
-var dl=fr.replace(/(?:de\s+|unos\s+)?\d+(?:[.,]\d+)?\s*(?:m2|m\u00b2|metros cuadrados|metros lineales|metros|ml|m|ud|uds|unidades)\b/g,'').replace(/^(?:quiero|hay que|habria que|tambien|y)\s+/,'').replace(/\s+/g,' ').replace(/[\s,]+$/,'').trim();if(dl.length<4)dl=fr;var d=dl.charAt(0).toUpperCase()+dl.slice(1);var ap=aprendidoParecido(dl);
+if(!/\b(poner|colocar|hacer|montar|instalar|cambiar|quitar|picar|tirar|sacar|levantar|echar|meter|pintar|alicat\w*|lijar|nivelar|reformar|arreglar|reparar|sustituir|renovar|abrir|cerrar|tapar|forrar|revestir|sellar|impermeabilizar|desatascar|limpiar|acuchillar|barnizar|lacar|enlucir|rasear|microcemento|mampara|grifo|grifer\w*|radiador|caldera|persiana|encimera|silicona|marmol|granito|piedra|madera|hierro|aluminio|cristal|espejo|aire acondicionado|split|toldo|placas? solares?|tejado|canalon\w*|cubierta|fachada|ventanas?|persianas?|cerramiento|escalera|barandilla|termo|suelo radiante|domotica|alarma|ventanal\w*|claraboya|velux|bomba de calor|aerotermia)\b/.test(fr))return;
+var frSin=fr.replace(DIM_RE,' ');var par=/\b(ventana\w*|persiana\w*|toldo|tejado|canalon\w*|cubierta|fachada|placas? solares?|aire acondicionado|split|cerramiento|escalera|barandilla|claraboya|velux|bomba de calor|aerotermia|alarma|domotica)\b/.test(fr)||/* «barnizar las puertas», «lacar las puertas»: fuera de tarifa (no es la corredera ni las puertas nuevas) */ /\b(?:barniz\w*|lacar|lacad\w*)\b[^,.;]{0,25}\bpuertas?\b/.test(fr)?null:parecida(fr),c=cantidadDe(frSin);
+if(par){var t=par.t;if(yaD[norm(t.d).slice(0,40)])return;var q=c.q;if(t.u==='m2'&&PARED.indexOf(t.id)>-1&&MD.suelo>0&&(!MD.casa||PINTA.indexOf(t.id)>-1)&&!/m2|metros cuadrados/.test(fr))q=paredNeta(MD);cur.lineas.push(par.fu&&(par.nf>=2||!par.suelta)?{d:t.d,q:q,u:t.u,p:t.p}:{d:t.d,q:q,u:t.u,p:t.p,parec:1,parTxt:fr});yaD[norm(t.d).slice(0,40)]=1;añad++;return}
+var dl=fr.replace(/(?:de\s+|unos\s+)?\d+(?:[.,]\d+)?\s*(?:m2|m\u00b2|metros cuadrados|metros lineales|metros|ml|m|ud|uds|unidades)\b/g,'').replace(/^(?:quiero|hay que|habria que|tambien|y)\s+/,'').replace(/\s+/g,' ').replace(/[\s,]+$/,'').trim().replace(/\s*,?\s+(?:que\s+)?(?:son|es|mide|miden|tiene|tienen)$/,'')/* sin el «que son» que queda al quitar los metros */;if(dl.length<4)dl=fr;var d=dl.charAt(0).toUpperCase()+dl.slice(1);var ap=aprendidoParecido(dl);
 if(yaD[norm(d).slice(0,40)])return;
 /* lo que no entiende también se mide: si no dice cuánto, con las medidas de lo dictado (paredes, suelo o perímetro) */
 var q=c.q,u=c.u;if(!/\d/.test(frSin)&&MD.suelo>0){
